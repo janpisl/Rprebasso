@@ -1,4 +1,3 @@
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !subroutine bridging
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -50,12 +49,12 @@ implicit none
  real (kind=8) :: modOut((nYears+1),nVar,nLayers,2)
  real (kind=8) :: soilC((nYears+1),5,3,nLayers),soilCtot((nYears+1))
  real (kind=8) :: par_phib,par_phic,par_alfat,par_alfar1,par_alfar2,par_alfar3,par_alfar4
- real (kind=8) :: par_alfar5,par_etab,par_k,par_vf,par_vr,par_sla,par_mf,par_mr,par_mw,par_vf0
+ real (kind=8) :: par_alfar5,par_etab,par_k,par_vf,par_vr,par_sla,par_mf,par_mr,par_mw,par_vf0, par_vr0
  real (kind=8) :: par_z,par_rhos,par_cR, par_x, Light,MeanLight(nLayers),par_mf0,par_mr0,par_mw0
  real (kind=8) :: par_sarShp, par_S_branchMod
  real (kind=8) :: par_rhof, par_rhor, par_rhow, par_c, par_beta0, par_betab, par_betas
  real (kind=8) :: par_s1, par_p0, par_ksi, par_cr2,par_kRein,Rein, c_mort
- real (kind=8) :: BA, dA, dB, reineke, dN, wf_test,par_thetaMax, par_Age0, par_gamma
+ real (kind=8) :: BA, dA, dB, reineke, dN, wf_test,par_thetaMax, par_H0, par_gamma, mrFact
  real (kind=8) :: par_rhof0, par_rhof1, par_rhof2, par_aETS,dHcCum,dHCum,pars(30)
 
 !management routines
@@ -82,6 +81,10 @@ implicit none
 !v1 version definitions
  real (kind=8) :: theta
 
+ ! avP0 = sum(P0y)/nYears
+ ! avETS = sum(ETSy)/nYears
+ ! open(2,file="test.txt")
+  ! write(*,*) "avP0", avP0
 !###initialize model###!
 fbAWENH = 0.
 folAWENH = 0.
@@ -156,8 +159,7 @@ do year = 1, (nYears)
   do time = 1, inttimes !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
  ! do ki = 1, nSites
-  ! calculate self-thinning using all tree classes
- if(time==inttimes)then
+ ! calculate self-thinning using all tree classes
      Ntot = sum(STAND_all(17,:))
      B = sum(STAND_all(35,:)*STAND_all(17,:))/Ntot   !!!!!!!!!#####changed
      if(Ntot>0.) then
@@ -166,7 +168,6 @@ do year = 1, (nYears)
          Reineke = 0.
      endif
  ! end do
- endif
 
 do ij = 1 , nLayers 		!loop Species
 
@@ -206,7 +207,7 @@ do ij = 1 , nLayers 		!loop Species
  p0_ref = param(29)
  ETS_ref = param(30)
  par_thetaMax = param(31)
- par_Age0 = param(32)
+ par_H0 = param(32)
  par_gamma = param(33)
  par_rhof1 = 0.!param(20)
  par_Cr2 = 0.!param(24)
@@ -246,7 +247,7 @@ if (N>0.) then
   par_rhof0 = par_rhof1 * ETS_ref + par_rhof2
   par_rhof = par_rhof1 * ETS + par_rhof2
   par_vf = par_vf0 / (1. + par_aETS * (ETS-ETS_ref)/ETS_ref)
-!  par_vr = par_vr / (1. + par_aETS * (ETS-ETS_ref)/ETS_ref)
+  par_vr = par_vr0 / (1. + par_aETS * (ETS-ETS_ref)/ETS_ref) !!!new version
 
  !calculate derived variables
   rc = Lc / (H-1.3) !crown ratio
@@ -337,8 +338,6 @@ if (year <= maxYearSite) then
 
    fAPARprel(:) = fAPARsite
    fAPAR(year) = fAPARsite
-   
-		if(time==inttimes)then
    call preles(weatherPRELES(year,:,:),DOY,fAPARprel,prelesOut, pars, &
 		dailyPRELES((1+((year-1)*365)):(365*year),1), &  !daily GPP
 		dailyPRELES((1+((year-1)*365)):(365*year),2), &  !daily ET
@@ -369,7 +368,7 @@ do ij = 1 , nLayers
  par_sla =param(3)
  par_k =param(4)
  par_vf0 =param(5)
- par_vr =param(6)
+ par_vr0 =param(6)
  par_c=param(7)
  par_mf0=param(8)
  par_mr0=param(9)
@@ -394,7 +393,7 @@ do ij = 1 , nLayers
  p0_ref = param(29)
  ETS_ref = param(30)
  par_thetaMax = param(31)
- par_Age0 = param(32)
+ par_H0 = param(32)
  par_gamma = param(33)
  par_rhof1 = 0.!param(20)
  par_Cr2 = 0.!param(24)
@@ -454,21 +453,23 @@ if (N>0.) then
   end if
 
 !!relate metabolic and structural parameters to site conditions
-
 !  par_mf = par_mf0 * p0 / p0_ref
 !  par_mr = par_mr0 * p0 / p0_ref
 !  par_mw = par_mw0 * p0 / p0_ref
 
-  theta = par_thetaMax / (1. + exp(-(age-par_Age0)/par_gamma))  !!!!v1
+  ! theta = par_thetaMax / (1. + exp(-(age-par_Age0)/par_gamma))  !!!!age dependent version
+  theta = par_thetaMax / (1. + exp(-(par_H0)/par_gamma))  !!!!new version
 
-  par_mf = par_mf0* p0 / p0_ref + theta  !!!!v1
-  par_mr = par_mr0* p0 / p0_ref + theta  !!!!v1
-  par_mw = par_mw0* p0 / p0_ref + theta  !!!!v1
+  mrFact = max(0., par_aETS * (ETS_ref-ETS)/ETS_ref) !!!new version
+  par_mr = par_mr0* p0 / p0_ref + theta + (1+par_c) * A / par_vr0    !!!new version
+  par_mf = par_mf0* p0 / p0_ref + theta  
+  ! par_mr = par_mr0* p0 / p0_ref + theta
+  par_mw = par_mw0* p0 / p0_ref + theta
 
   par_rhof0 = par_rhof1 * ETS_ref + par_rhof2
   par_rhof = par_rhof1 * ETS + par_rhof2
   par_vf = par_vf0 / (1. + par_aETS * (ETS-ETS_ref)/ETS_ref)
-!  par_vr = par_vr / (1. + par_aETS * (ETS-ETS_ref)/ETS_ref)
+  par_vr = par_vr0 / (1. + par_aETS * (ETS-ETS_ref)/ETS_ref) !!new version
   par_rhor = par_alfar * par_rhof
 
     ! -------------------------------------
@@ -537,7 +538,7 @@ endif
 
 ! Mortality - use Reineke from above
 !      if((Reineke(siteNo) > par_kRein .OR. Light < par_cR) .and. siteThinning(siteNo) == 0) then !
-     if(time==inttimes) then
+!     if(time==inttimes) then
       Rein = Reineke / par_kRein
 
       if(Rein > 1.) then
@@ -559,7 +560,6 @@ endif
 				exp(-exp(pCrobas(34,species) + pCrobas(35,species)*ijj + pCrobas(36,species)*D + 0.))
 		enddo
 	  end if
-	 endif
 	  
 	  
 !!  Update state variables
@@ -893,7 +893,7 @@ if(defaultThin == 1.) then
     par_sla =param(3)
     par_k =param(4)
     par_vf0 =param(5)
-    par_vr =param(6)
+    par_vr0 =param(6)
     par_c=param(7)
     par_mf0=param(8)
     par_mr0=param(9)
@@ -918,7 +918,7 @@ if(defaultThin == 1.) then
     p0_ref = param(29)
     ETS_ref = param(30)
     par_thetaMax = param(31)
-    par_Age0 = param(32)
+    par_H0 = param(32)
     par_gamma = param(33)
     par_rhof1 = 0.!param(20)
     par_Cr2 = 0.!param(24)
@@ -935,7 +935,7 @@ if(defaultThin == 1.) then
     stand_all(13,ij) = BA
     Nold = stand_all(17,ij)
     N = BA/(pi*((D/2./100.)**2.))
-    Nthd = max(0.,(Nold - N))
+	Nthd = max(0.,Nold - N)
     Hc = stand_all(14,ij)
     Lc = H - Hc !Lc
     rc = Lc / (H-1.3) !crown ratio
