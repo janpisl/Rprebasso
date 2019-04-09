@@ -461,7 +461,7 @@ if (N>0.) then
   theta = par_thetaMax / (1. + exp(-(par_H0)/par_gamma))  !!!!new version
 
   mrFact = max(0., par_aETS * (ETS_ref-ETS)/ETS_ref) !!!new version
-  par_mr = par_mr0* p0 / p0_ref + theta + (1+par_c) * A / par_vr0    !!!new version
+  par_mr = par_mr0* p0 / p0_ref + theta + (1+par_c) * mrFact / par_vr0    !!!new version
   par_mf = par_mf0* p0 / p0_ref + theta  
   ! par_mr = par_mr0* p0 / p0_ref + theta
   par_mw = par_mw0* p0 / p0_ref + theta
