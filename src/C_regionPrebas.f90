@@ -11,7 +11,7 @@ subroutine regionPrebas(siteOrder,HarvLim,minDharv,multiOut,nSites,areas,nClimID
 
 implicit none
 
-integer, parameter :: nVar=46,npar=37!, nSp=3
+integer, parameter :: nVar=46,npar=38!, nSp=3
 integer, intent(in) :: nYears(nSites),nLayers(nSites),allSP
 integer :: i,climID,ij,iz,ijj,ki,n,jj,az
 integer, intent(in) :: nSites, maxYears, maxThin,nClimID,maxNlayers,siteOrder(nSites,maxYears)
@@ -143,7 +143,7 @@ do ij = 1,maxYears
 	  jj = int(output(1,4,ijj,1))
 	    do ki = 1,(maxYears-ij)
 			multiOut(i,(ki+ij),8,ijj,1) = multiOut(i,(ki+ij),8,ijj,1) + output(1,8,ijj,1) * &
-				exp(-exp(pCrobas(34,jj) + pCrobas(35,jj)*ijj + pCrobas(36,jj)*output(1,12,ijj,1) + 0.))
+				exp(-exp(pCrobas(35,jj) + pCrobas(36,jj)*ijj + pCrobas(37,jj)*output(1,12,ijj,1) + pCrobas(38,jj)))
 		enddo
 	  end if
 	enddo

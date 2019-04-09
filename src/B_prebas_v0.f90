@@ -8,7 +8,7 @@ subroutine prebas_v0(nYears,nLayers,nSp,siteInfo,pCrobas,initVar,thinning,output
 
 implicit none
 
- integer, parameter :: nVar=46,npar=37, inttimes = 1!, nSp=3
+ integer, parameter :: nVar=46,npar=38, inttimes = 1!, nSp=3
  real (kind=8), parameter :: pi = 3.1415927, t=1.
  ! logical steadystate_pred= .false.
 !define arguments
@@ -54,7 +54,7 @@ implicit none
  real (kind=8) :: par_sarShp, par_S_branchMod
  real (kind=8) :: par_rhof, par_rhor, par_rhow, par_c, par_beta0, par_betab, par_betas
  real (kind=8) :: par_s1, par_p0, par_ksi, par_cr2,par_kRein,Rein, c_mort
- real (kind=8) :: BA, dA, dB, reineke, dN, wf_test,par_thetaMax, par_H0, par_gamma, mrFact
+ real (kind=8) :: BA, dA, dB, reineke, dN, wf_test,par_thetaMax, par_H0,par_H0max,par_kH, par_gamma, mrFact
  real (kind=8) :: par_rhof0, par_rhof1, par_rhof2, par_aETS,dHcCum,dHCum,pars(30)
 
 !management routines
@@ -207,11 +207,12 @@ do ij = 1 , nLayers 		!loop Species
  p0_ref = param(29)
  ETS_ref = param(30)
  par_thetaMax = param(31)
- par_H0 = param(32)
+ par_H0max = param(32)
  par_gamma = param(33)
  par_rhof1 = 0.!param(20)
  par_Cr2 = 0.!param(24)
-
+ par_kH = param(34)
+ 
 
 ! do siteNo = 1, nSites  !loop sites
 
@@ -393,10 +394,11 @@ do ij = 1 , nLayers
  p0_ref = param(29)
  ETS_ref = param(30)
  par_thetaMax = param(31)
- par_H0 = param(32)
+ par_H0max = param(32)
  par_gamma = param(33)
  par_rhof1 = 0.!param(20)
  par_Cr2 = 0.!param(24)
+ par_kH = param(34)
 
 ! do siteNo = 1, nSites  !start site loop
 
@@ -456,7 +458,8 @@ if (N>0.) then
 !  par_mf = par_mf0 * p0 / p0_ref
 !  par_mr = par_mr0 * p0 / p0_ref
 !  par_mw = par_mw0 * p0 / p0_ref
-
+  
+  par_H0 = par_H0max * (1 - exp(par_kH * ETS/par_alfar)) !!!new version
   ! theta = par_thetaMax / (1. + exp(-(age-par_Age0)/par_gamma))  !!!!age dependent version
   theta = par_thetaMax / (1. + exp(-(par_H0)/par_gamma))  !!!!new version
 
@@ -557,7 +560,7 @@ endif
 	  modOut((year+1),8,ij,1) = modOut((year+1),8,ij,1) + Vold* min(1.,-dN*step/Nold)
 	    do ijj = 1,(nyears-year)
 			modOut((year+ijj+1),8,ij,1) = modOut((year+ijj+1),8,ij,1) + (Vold/Nold) * (-dN*step) * &
-				exp(-exp(pCrobas(34,species) + pCrobas(35,species)*ijj + pCrobas(36,species)*D + 0.))
+				exp(-exp(pCrobas(35,species) + pCrobas(36,species)*ijj + pCrobas(37,species)*D + pCrobas(38,species)))
 		enddo
 	  end if
 	  
@@ -918,10 +921,12 @@ if(defaultThin == 1.) then
     p0_ref = param(29)
     ETS_ref = param(30)
     par_thetaMax = param(31)
-    par_H0 = param(32)
+    par_H0max = param(32)
     par_gamma = param(33)
     par_rhof1 = 0.!param(20)
     par_Cr2 = 0.!param(24)
+	par_kH = param(34)
+	
     par_rhof = par_rhof1 * stand_all(5,ij) + par_rhof2
     BA_tot = BA_thd
     BA = BAr(ij) * BA_thd
