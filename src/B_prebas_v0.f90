@@ -461,7 +461,7 @@ if (N>0.) then
   
   par_H0 = par_H0max * (1 - exp(par_kH * ETS/par_alfar)) !!!new version
   ! theta = par_thetaMax / (1. + exp(-(age-par_Age0)/par_gamma))  !!!!age dependent version
-  theta = par_thetaMax / (1. + exp(-(H - par_H0)/par_gamma))  !!!!new version
+  theta = par_thetaMax / (1. + exp(-(H - par_H0)/(par_H0*par_gamma)))   !!!!new version
 
   mrFact = max(0., par_aETS * (ETS_ref-ETS)/ETS_ref) !!!new version
   par_mr = par_mr0* p0 / p0_ref + theta + (1+par_c) * mrFact / par_vr0    !!!new version
