@@ -237,7 +237,7 @@ else
   hb = par_betab * Lc ** par_x
   Cw = 2. * hb
   STAND(15) = Cw
-  STAND(16) = LC !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TO CHECK !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! STAND(16) = LC !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TO CHECK !!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ETS = STAND(5) !!##!!2
   Light = STAND(36)
 
@@ -418,7 +418,7 @@ else
   BA = STAND(13)! * par_ops2
   Hc = STAND(14)
   Cw = STAND(15)
-  Lc = STAND(16)
+  ! Lc = STAND(16)
   N = STAND(17)
   Lc = H - Hc
   leff = STAND(19)
@@ -459,10 +459,10 @@ if (N>0.) then
 !  par_mr = par_mr0 * p0 / p0_ref
 !  par_mw = par_mw0 * p0 / p0_ref
   
-  par_H0 = par_H0max * (1 - exp(par_kH * ETS/par_alfar)) !!!new version
+  par_H0 = par_H0max * (1 - exp(-par_kH * ETS/par_alfar)) !!!new version
   ! theta = par_thetaMax / (1. + exp(-(age-par_Age0)/par_gamma))  !!!!age dependent version
   theta = par_thetaMax / (1. + exp(-(H - par_H0)/(par_H0*par_gamma)))   !!!!new version
-
+  
   mrFact = max(0., par_aETS * (ETS_ref-ETS)/ETS_ref) !!!new version
   par_mr = par_mr0* p0 / p0_ref + theta + (1+par_c) * mrFact / par_vr0    !!!new version
   par_mf = par_mf0* p0 / p0_ref + theta  
@@ -640,7 +640,7 @@ endif
   STAND(13) = BA
   STAND(14) = Hc
   STAND(15) = Cw
-  STAND(16) = Lc
+  STAND(16) = theta
   STAND(17) = N
   STAND(24) = W_branch
   STAND(25) = W_froot
@@ -757,7 +757,7 @@ endif
      STAND(13) = BA
      STAND(14) = Hc  ! stand Hc
      STAND(15) = Cw
-     STAND(16) = Lc  ! stand Lc
+     ! STAND(16) = Lc  ! stand Lc
      STAND(17) = N
      STAND(26) = S_fol
      STAND(27) = S_fr
