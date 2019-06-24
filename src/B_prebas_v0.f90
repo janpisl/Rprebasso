@@ -107,14 +107,23 @@ P0yX = P0y
   modOut(1,39,i,1) = sum(soilC(1,:,:,i)) !assign initial soilC
   modOut(:,5,i,1) = ETSy! assign ETS
   modOut(:,6,i,1) = P0yX(:,2)	! assign P0
+  modOut(1,12,i,1) = initVar(4,i)
+  modOut(1,13,i,1) = initVar(5,i)
+  if(modOut(1,12,i,1) > 0.) then
+	modOut(1,17,i,1) = modOut(1,13,i,1)/(pi*((modOut(1,12,i,1)/2/100)**2))
+	modOut(1,35,i,1) = modOut(1,13,i,1)/modOut(1,17,i,1)
+  else
+	modOut(1,17,i,1) = 0. 
+	modOut(1,35,i,1) = 0.
+  endif
  enddo
  modOut(:,1,:,1) = siteInfo(1); modOut(:,2,:,1) = siteInfo(2)	!! assign siteID and climID
  modOut(1,11,:,1) = initVar(3,:)
- modOut(1,12,:,1) = initVar(4,:)
- modOut(1,13,:,1) = initVar(5,:)
+ ! modOut(1,12,:,1) = initVar(4,:)
+ ! modOut(1,13,:,1) = initVar(5,:)
  modOut(1,14,:,1) = initVar(6,:)
- modOut(1,17,:,1) = modOut(1,13,:,1)/(pi*((modOut(1,12,:,1)/2/100)**2))
- modOut(1,35,:,1) =  modOut(1,13,:,1)/modOut(1,17,:,1)
+ ! modOut(1,17,:,1) = modOut(1,13,:,1)/(pi*((modOut(1,12,:,1)/2/100)**2))
+ ! modOut(1,35,:,1) =  modOut(1,13,:,1)/modOut(1,17,:,1)
  modOut(:,3,:,1) = siteInfo(3);sitetype = siteInfo(3)! assign site type
  soilCtot(1) = sum(soilC(1,:,:,:)) !assign initial soilC
 
@@ -135,8 +144,14 @@ do year = 1, (nYears)
 	 modOut(year,11,ijj,1) = initClearcut(1)
      modOut(year,12,ijj,1) = initClearcut(2)
      modOut(year,14,ijj,1) = initClearcut(4)
-     modOut(year,17,ijj,1) = modOut(year,13,ijj,1)/(pi*((modOut(year,12,ijj,1)/2/100)**2))
-     modOut(year,35,ijj,1) = modOut(year,13,ijj,1) / modOut(year,17,ijj,1)
+	if(modOut(1,12,ijj,1) > 0.) then
+	  modOut(1,17,ijj,1) = modOut(1,13,ijj,1)/(pi*((modOut(1,12,ijj,1)/2/100)**2))
+	  modOut(1,35,ijj,1) =  modOut(1,13,ijj,1)/modOut(1,17,ijj,1)
+    else
+	  modOut(1,17,ijj,1) = 0. 
+	  modOut(1,35,ijj,1) = 0. 
+    endif
+     ! modOut(year,35,ijj,1) = modOut(year,13,ijj,1) / modOut(year,17,ijj,1)
    enddo
    do ki = 1,int(Ainit)
     do ijj = 1,nLayers
